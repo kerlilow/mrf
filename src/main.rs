@@ -7,7 +7,7 @@ use std::process::Command;
 use clap::{AppSettings, Clap};
 use dialoguer::Confirm;
 
-use mrf::{parser::parse, replacer::Replacer};
+use mrf::{command, parser::parse, replacer::Replacer};
 
 const MAX_PREVIEWS: usize = 5;
 
@@ -115,9 +115,9 @@ fn handle_exec(opts: ExecOpts) -> Result<(), Box<dyn Error>> {
             return Ok(());
         }
     }
-    let args = opts.command.split(' ').collect::<Vec<&str>>();
+    let args = command::parse(&opts.command)?;
     for (left, right) in &replacements {
-        let mut cmd = Command::new(args[0]);
+        let mut cmd = Command::new(&args[0]);
         cmd.args(&args[1..]);
         if opts.output_left && !opts.output_right {
             cmd.arg(left);

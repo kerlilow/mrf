@@ -1,3 +1,4 @@
+pub mod command;
 pub mod elem;
 pub mod matcher;
 pub mod parser;
