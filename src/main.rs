@@ -54,18 +54,21 @@ struct ExecOpts {
 }
 
 fn main() {
-    let opts = Opts::parse();
-    let res = match opts.subcmd {
-        Subcommand::Map(sub_opts) => handle_map(sub_opts),
-        Subcommand::Exec(sub_opts) => handle_exec(sub_opts),
-    };
-    std::process::exit(match res {
+    std::process::exit(match run_app() {
         Ok(_) => 0,
         Err(err) => {
             eprintln!("An error occurred:\n{}", err);
             1
         }
     });
+}
+
+fn run_app() -> Result<(), Box<dyn Error>> {
+    let opts = Opts::parse();
+    match opts.subcmd {
+        Subcommand::Map(sub_opts) => handle_map(sub_opts),
+        Subcommand::Exec(sub_opts) => handle_exec(sub_opts),
+    }
 }
 
 /// Handle map (`map`) subcommand.
