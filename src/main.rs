@@ -1,5 +1,7 @@
+use std::cmp;
 use std::error::Error;
 use std::fmt;
+use std::io::BufRead;
 use std::process::Command;
 
 use clap::{AppSettings, Clap};
@@ -62,8 +64,9 @@ fn main() {
 
 /// Handle map (`map`) subcommand.
 fn handle_map(opts: MapOpts) -> Result<(), Box<dyn Error>> {
-    let replacements = resolve_replacements(&opts.item, &opts.replacer)?;
-    let print = if atty::is(atty::Stream::Stdout) {
+    let items = items_from_opt(opts.item)?;
+    let replacements = resolve_replacements(&items, &opts.replacer)?;
+    let print: fn(&str, &str) = if atty::is(atty::Stream::Stdout) {
         if opts.output_left && !opts.output_right {
             |left, _| println!("{}", left)
         } else if !opts.output_left && opts.output_right {
@@ -79,19 +82,20 @@ fn handle_map(opts: MapOpts) -> Result<(), Box<dyn Error>> {
         |left, right| print!("{}\0{}\0", left, right)
     };
     for (left, right) in replacements {
-        print(left, right);
+        print(left, &right);
     }
     Ok(())
 }
 
 /// Handle exec subcommand.
 fn handle_exec(opts: ExecOpts) -> Result<(), Box<dyn Error>> {
-    let replacements = resolve_replacements(&opts.item, &opts.replacer)?;
+    let items = items_from_opt(opts.item)?;
+    let replacements = resolve_replacements(&items, &opts.replacer)?;
     if !opts.yes {
         println!(
             "Matched {} out of {} items:",
             replacements.len(),
-            opts.item.len()
+            items.len()
         );
         println!("{}", replacement_previews(&replacements));
         if !Confirm::new()
@@ -118,15 +122,37 @@ fn handle_exec(opts: ExecOpts) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-/// Resolve replacements by parsing elements from `replacement` and applying replacer to each
-/// string.
-fn resolve_replacements<'a, T: AsRef<str>>(
+/// If items contain a single string "-", read items from stdin, otherwise return as-is.
+fn items_from_opt(items: Vec<String>) -> Result<Vec<String>, std::io::Error> {
+    Ok(if items.len() == 1 && items[0] == "-" {
+        read_items_from_stdin()?
+    } else {
+        items
+    })
+}
+
+/// Read items from stdin, one item per line.
+fn read_items_from_stdin() -> Result<Vec<String>, std::io::Error> {
+    let mut items: Vec<String> = vec![];
+    for line in std::io::stdin().lock().lines() {
+        items.push(line?);
+    }
+    Ok(items)
+}
+
+/// Resolve replacements by parsing elements from `replacement` and applying replacer to each item.
+fn resolve_replacements<'a, T: AsRef<str> + cmp::PartialEq>(
     items: &'a [T],
     replacer_str: &str,
 ) -> Result<Vec<(&'a T, String)>, Box<dyn Error>> {
     let elems = parse(replacer_str)?;
     let replacer = Replacer::new(&elems);
-    Ok(items
+    Ok(replace_items(&replacer, items))
+}
+
+/// Apply replacer to each item.
+fn replace_items<'a, T: AsRef<str>>(replacer: &Replacer, items: &'a [T]) -> Vec<(&'a T, String)> {
+    items
         .iter()
         .filter_map(|left| {
             replacer
@@ -134,7 +160,7 @@ fn resolve_replacements<'a, T: AsRef<str>>(
                 .map(|right| (left, right))
                 .ok()
         })
-        .collect())
+        .collect()
 }
 
 /// Return a formatted preview of replacements, useful for confirmation with user.
