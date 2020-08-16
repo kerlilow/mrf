@@ -5,11 +5,14 @@ use std::io::BufRead;
 use std::process::Command;
 
 use clap::{AppSettings, Clap};
+use crossbeam_channel::{bounded, Receiver};
+use crossbeam_utils::thread;
 use dialoguer::Confirm;
 
 use mrf::{command, parser::parse, replacer::Replacer};
 
 const MAX_PREVIEWS: usize = 5;
+const CHANNEL_CAP_MULTIPLIER: usize = 10;
 
 #[derive(Clap)]
 #[clap(
@@ -47,10 +50,27 @@ struct ExecOpts {
     output_left: bool,
     #[clap(short = "r", long)]
     output_right: bool,
+    #[clap(short, long)]
+    concurrency: Option<usize>,
     command: String,
     #[clap(required = true)]
     item: Vec<String>,
     replacer: String,
+}
+
+#[derive(Clone)]
+struct ExecOutputOpts {
+    output_left: bool,
+    output_right: bool,
+}
+
+impl From<ExecOpts> for ExecOutputOpts {
+    fn from(opts: ExecOpts) -> Self {
+        ExecOutputOpts {
+            output_left: opts.output_left,
+            output_right: opts.output_right,
+        }
+    }
 }
 
 fn main() {
@@ -116,17 +136,46 @@ fn handle_exec(opts: ExecOpts) -> Result<(), Box<dyn Error>> {
         }
     }
     let args = command::parse(&opts.command)?;
-    for (left, right) in &replacements {
+    let concurrency = opts.concurrency.unwrap_or_else(num_cpus::get);
+    let (s, r) = bounded::<(&str, String)>(concurrency * CHANNEL_CAP_MULTIPLIER);
+    let output_opts = ExecOutputOpts {
+        output_left: opts.output_left,
+        output_right: opts.output_right,
+    };
+    thread::scope(|scope| {
+        let mut ts = vec![];
+        for _ in 0..concurrency {
+            let r = r.clone();
+            ts.push(scope.spawn(|_| {
+                run_exec_thread(r, &args, &output_opts).unwrap();
+            }));
+        }
+        for (left, right) in replacements {
+            s.send((left, right)).unwrap();
+        }
+        drop(s);
+    })
+    .unwrap();
+    Ok(())
+}
+
+/// Run exec thread.
+fn run_exec_thread(
+    r: Receiver<(&str, String)>,
+    args: &[String],
+    opts: &ExecOutputOpts,
+) -> Result<(), Box<dyn Error>> {
+    while let Ok((left, right)) = r.recv() {
         let mut cmd = Command::new(&args[0]);
         cmd.args(&args[1..]);
         if opts.output_left && !opts.output_right {
             cmd.arg(left);
         } else if !opts.output_left && opts.output_right {
-            cmd.arg(&right);
+            cmd.arg(right);
         } else {
             cmd.args(&[left, &right]);
         }
-        cmd.spawn()?;
+        cmd.spawn()?.wait()?;
     }
     Ok(())
 }
