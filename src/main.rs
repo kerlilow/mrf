@@ -32,6 +32,7 @@ enum Subcommand {
 }
 
 #[derive(Clap)]
+#[clap(setting = AppSettings::ColoredHelp)]
 struct MapOpts {
     #[clap(short = "l", long)]
     output_left: bool,
@@ -43,6 +44,7 @@ struct MapOpts {
 }
 
 #[derive(Clap)]
+#[clap(setting = AppSettings::ColoredHelp)]
 struct ExecOpts {
     #[clap(short, long)]
     yes: bool,
