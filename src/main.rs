@@ -66,15 +66,6 @@ struct ExecOutputOpts {
     output_right: bool,
 }
 
-impl From<ExecOpts> for ExecOutputOpts {
-    fn from(opts: ExecOpts) -> Self {
-        ExecOutputOpts {
-            output_left: opts.output_left,
-            output_right: opts.output_right,
-        }
-    }
-}
-
 fn main() {
     std::process::exit(match run_app() {
         Ok(_) => 0,
