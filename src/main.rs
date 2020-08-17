@@ -77,6 +77,11 @@ fn main() {
 }
 
 fn run_app() -> Result<(), Box<dyn Error>> {
+    ctrlc::set_handler(move || {
+        let term = console::Term::stdout();
+        let _ = term.show_cursor();
+    })?;
+
     let opts = Opts::parse();
     match opts.subcmd {
         Subcommand::Map(sub_opts) => handle_map(sub_opts),
