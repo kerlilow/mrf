@@ -19,8 +19,7 @@ struct Opts {
 enum Subcommand {
     Map(subcommands::map::Opts),
     Exec(subcommands::exec::Opts),
-    #[clap(name = "mv")]
-    Move(subcommands::mv::Opts),
+    Mv(subcommands::mv::Opts),
 }
 
 fn main() {
@@ -43,6 +42,6 @@ fn run_app() -> Result<(), Box<dyn Error>> {
     match opts.subcmd {
         Subcommand::Map(sub_opts) => subcommands::map::run(sub_opts),
         Subcommand::Exec(sub_opts) => subcommands::exec::run(sub_opts),
-        Subcommand::Move(sub_opts) => subcommands::mv::run(sub_opts),
+        Subcommand::Mv(sub_opts) => subcommands::mv::run(sub_opts),
     }
 }
