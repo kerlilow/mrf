@@ -29,6 +29,8 @@ struct Opts {
 enum Subcommand {
     Map(MapOpts),
     Exec(ExecOpts),
+    #[clap(name = "mv")]
+    Move(MoveOpts),
 }
 
 #[derive(Clap)]
@@ -66,6 +68,18 @@ struct ExecOutputOpts {
     output_right: bool,
 }
 
+#[derive(Clap)]
+#[clap(setting = AppSettings::ColoredHelp)]
+struct MoveOpts {
+    #[clap(short, long)]
+    yes: bool,
+    #[clap(short, long)]
+    concurrency: Option<usize>,
+    #[clap(required = true)]
+    item: Vec<String>,
+    replacer: String,
+}
+
 fn main() {
     std::process::exit(match run_app() {
         Ok(_) => 0,
@@ -86,6 +100,7 @@ fn run_app() -> Result<(), Box<dyn Error>> {
     match opts.subcmd {
         Subcommand::Map(sub_opts) => handle_map(sub_opts),
         Subcommand::Exec(sub_opts) => handle_exec(sub_opts),
+        Subcommand::Move(sub_opts) => handle_move(sub_opts),
     }
 }
 
@@ -174,6 +189,52 @@ fn run_exec_thread(
             cmd.args(&[left, &right]);
         }
         cmd.spawn()?.wait()?;
+    }
+    Ok(())
+}
+
+/// Handle move subcommand.
+fn handle_move(opts: MoveOpts) -> Result<(), Box<dyn Error>> {
+    let items = items_from_opt(opts.item)?;
+    let replacements = resolve_replacements(&items, &opts.replacer)?;
+    if !opts.yes {
+        println!(
+            "Moving {} out of {} items:",
+            replacements.len(),
+            items.len()
+        );
+        println!("{}", replacement_previews(&replacements));
+        if !Confirm::new()
+            .with_prompt("Do you want to continue?")
+            .default(false)
+            .interact()?
+        {
+            return Ok(());
+        }
+    }
+    let concurrency = opts.concurrency.unwrap_or_else(num_cpus::get);
+    let (s, r) = bounded::<(&str, String)>(concurrency * CHANNEL_CAP_MULTIPLIER);
+    thread::scope(|scope| {
+        let mut ts = vec![];
+        for _ in 0..concurrency {
+            let r = r.clone();
+            ts.push(scope.spawn(|_| {
+                run_move_thread(r).unwrap();
+            }));
+        }
+        for (left, right) in replacements {
+            s.send((left, right)).unwrap();
+        }
+        drop(s);
+    })
+    .unwrap();
+    Ok(())
+}
+
+/// Run move thread.
+fn run_move_thread(r: Receiver<(&str, String)>) -> Result<(), Box<dyn Error>> {
+    while let Ok((left, right)) = r.recv() {
+        std::fs::rename(left, right)?;
     }
     Ok(())
 }
