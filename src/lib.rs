@@ -1,5 +1,6 @@
 pub mod command;
 pub mod elem;
+pub mod formatter;
 pub mod matcher;
 pub mod parser;
 pub mod replacer;

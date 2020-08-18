@@ -1,17 +1,18 @@
-use crate::{elem::Elem, matcher::Matcher, spec::Spec};
 use std::fmt;
 use std::str::FromStr;
 
 use nom::{
     branch::alt,
-    bytes::complete::{escaped, is_not, take_till},
+    bytes::complete::{escaped, is_not},
     character::complete::{char, digit1, one_of},
-    combinator::{all_consuming, map, map_res, opt, verify},
+    combinator::{all_consuming, map, map_res, opt, peek, verify},
     error::{convert_error, ParseError, VerboseError},
     multi::many0,
     sequence::{delimited, preceded},
     Err, IResult,
 };
+
+use crate::{elem::Elem, formatter::Formatter, matcher::Matcher, spec::Spec};
 
 #[derive(Debug, Clone)]
 pub struct Error {
@@ -108,14 +109,14 @@ fn spec<'a, E: ParseError<&'a str>>(s: &'a str) -> IResult<&'a str, Spec, E> {
     let (s, matcher) = spec_matcher(s)?;
     let (s, index) = opt(map_res(digit1, usize::from_str))(s)?;
     let (s, replace) = opt(preceded(char('='), spec_replace))(s)?;
-    let (s, format) = opt(preceded(char(':'), spec_format))(s)?;
+    let (s, formatter) = opt(preceded(char(':'), spec_formatter))(s)?;
     Ok((
         s,
         Spec {
             matcher,
             index,
             replace,
-            format: format.map(|f| f.to_owned()),
+            formatter,
         },
     ))
 }
@@ -165,8 +166,17 @@ fn unescape_replace(s: &str) -> String {
 /// Parse a format string.
 ///
 /// A format string ends when a closing curly brace is met.
-fn spec_format<'a, E: ParseError<&'a str>>(s: &'a str) -> IResult<&'a str, &str, E> {
-    take_till(|c| c == '}')(s)
+fn spec_formatter<'a, E: ParseError<&'a str>>(s: &'a str) -> IResult<&'a str, Formatter, E> {
+    let (s, fill) = opt(char('0'))(s)?;
+    let (s, width) = opt(digit1)(s)?;
+    let (s, _) = peek(char('}'))(s)?;
+    Ok((
+        s,
+        Formatter {
+            fill: fill.unwrap_or(' '),
+            width: width.map(|w| w.parse::<usize>().unwrap()).unwrap_or(0),
+        },
+    ))
 }
 
 #[cfg(test)]
@@ -215,7 +225,7 @@ mod tests {
                     matcher: Matcher::Any,
                     index: Some(1),
                     replace: None,
-                    format: None,
+                    formatter: None
                 }),
             ],
         ),
@@ -227,7 +237,7 @@ mod tests {
                     matcher: Matcher::Number,
                     index: Some(1),
                     replace: None,
-                    format: None,
+                    formatter: None
                 }),
             ],
         ),
@@ -239,7 +249,7 @@ mod tests {
                     matcher: Matcher::Any,
                     index: None,
                     replace: Some("x".to_owned()),
-                    format: None,
+                    formatter: None
                 }),
             ],
         ),
@@ -251,7 +261,7 @@ mod tests {
                     matcher: Matcher::Any,
                     index: None,
                     replace: Some("".to_owned()),
-                    format: None,
+                    formatter: None
                 }),
             ],
         ),
@@ -263,7 +273,7 @@ mod tests {
                     matcher: Matcher::Any,
                     index: None,
                     replace: Some(":".to_owned()),
-                    format: None,
+                    formatter: None
                 }),
             ],
         ),
@@ -275,7 +285,7 @@ mod tests {
                     matcher: Matcher::Any,
                     index: None,
                     replace: Some("::".to_owned()),
-                    format: None,
+                    formatter: None
                 }),
             ],
         ),
@@ -287,19 +297,31 @@ mod tests {
                     matcher: Matcher::Any,
                     index: None,
                     replace: Some(":".to_owned()),
-                    format: Some("".to_owned()),
+                    formatter: Some(Formatter { fill: ' ', width: 0 }),
                 }),
             ],
         ),
 
         parse_format: (
+            "{:4}",
+            &[
+                Elem::Spec(Spec {
+                    matcher: Matcher::Any,
+                    index: None,
+                    replace: None,
+                    formatter: Some(Formatter { fill: ' ', width: 4 }),
+                }),
+            ],
+        ),
+
+        parse_format_zero: (
             "{n:04}",
             &[
                 Elem::Spec(Spec {
                     matcher: Matcher::Number,
                     index: None,
                     replace: None,
-                    format: Some("04".to_owned()),
+                    formatter: Some(Formatter { fill: '0', width: 4 }),
                 }),
             ],
         ),
@@ -311,7 +333,7 @@ mod tests {
                     matcher: Matcher::Number,
                     index: None,
                     replace: Some("1".to_owned()),
-                    format: Some("04".to_owned()),
+                    formatter: Some(Formatter { fill: '0', width: 4 }),
                 }),
             ],
         ),
@@ -323,7 +345,7 @@ mod tests {
                     matcher: Matcher::Number,
                     index: Some(1),
                     replace: Some("1".to_owned()),
-                    format: Some("04".to_owned()),
+                    formatter: Some(Formatter { fill: '0', width: 4 }),
                 }),
             ],
         ),

@@ -47,9 +47,16 @@ impl Replacer {
                 Elem::Spec(spec) => {
                     let idx = spec.index.unwrap_or_else(|| cursor);
                     cursor = idx + 1;
-                    spec.replace
-                        .as_ref()
-                        .map_or_else(|| parts[idx].to_owned(), |r| r.to_owned())
+                    let r: &str = if let Some(replace) = &spec.replace {
+                        &replace
+                    } else {
+                        parts[idx]
+                    };
+                    if let Some(formatter) = &spec.formatter {
+                        formatter.format(r)
+                    } else {
+                        r.to_owned()
+                    }
                 }
                 Elem::Lit(lit) => lit.to_owned(),
             })
@@ -99,7 +106,7 @@ fn indices_to_strs<'a>(s: &'a str, indices: &[usize]) -> Vec<&'a str> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::spec::Spec;
+    use crate::{formatter::Formatter, spec::Spec};
 
     macro_rules! replace_tests {
         ($($name:ident: $value:expr,)*) => {
@@ -122,7 +129,7 @@ mod tests {
                 matcher: Matcher::Any,
                 index: None,
                 replace: Some("b".to_owned()),
-                format: None,
+                formatter: None,
             }),
             Elem::Spec(Spec::new(Matcher::Any)),
         ], "b1"),
@@ -133,7 +140,7 @@ mod tests {
                 matcher: Matcher::Number,
                 index: None,
                 replace: Some("2".to_owned()),
-                format: None,
+                formatter: None,
             }),
         ], "a1a2"),
 
@@ -142,13 +149,13 @@ mod tests {
                 matcher: Matcher::Any,
                 index: Some(2),
                 replace: None,
-                format: None,
+                formatter: None,
             }),
             Elem::Spec(Spec {
                 matcher: Matcher::Any,
                 index: Some(1),
                 replace: None,
-                format: None,
+                formatter: None,
             }),
         ], "1a"),
 
@@ -157,13 +164,13 @@ mod tests {
                 matcher: Matcher::Any,
                 index: Some(1),
                 replace: None,
-                format: None,
+                formatter: None,
             }),
             Elem::Spec(Spec {
                 matcher: Matcher::Any,
                 index: Some(1),
                 replace: None,
-                format: None,
+                formatter: None,
             }),
         ], "a1a1"),
 
@@ -172,19 +179,19 @@ mod tests {
                 matcher: Matcher::Any,
                 index: Some(1),
                 replace: None,
-                format: None,
+                formatter: None,
             }),
             Elem::Spec(Spec {
                 matcher: Matcher::Any,
                 index: Some(1),
                 replace: None,
-                format: None,
+                formatter: None,
             }),
             Elem::Spec(Spec {
                 matcher: Matcher::Any,
                 index: Some(2),
                 replace: None,
-                format: None,
+                formatter: None,
             }),
         ], "aa1"),
 
@@ -193,19 +200,19 @@ mod tests {
                 matcher: Matcher::Any,
                 index: Some(1),
                 replace: None,
-                format: None,
+                formatter: None,
             }),
             Elem::Spec(Spec {
                 matcher: Matcher::Any,
                 index: Some(2),
                 replace: None,
-                format: None,
+                formatter: None,
             }),
             Elem::Spec(Spec {
                 matcher: Matcher::Any,
                 index: Some(2),
                 replace: None,
-                format: None,
+                formatter: None,
             }),
         ], "a11"),
 
@@ -216,7 +223,7 @@ mod tests {
                 matcher: Matcher::Number,
                 index: Some(2),
                 replace: None,
-                format: None,
+                formatter: None,
             }),
         ], "a1b_2"),
 
@@ -227,7 +234,7 @@ mod tests {
                 matcher: Matcher::Number,
                 index: Some(2),
                 replace: None,
-                format: None,
+                formatter: None,
             }),
             Elem::Lit("_".to_owned()),
             Elem::Spec(Spec::new(Matcher::Any)),
@@ -238,13 +245,13 @@ mod tests {
                 matcher: Matcher::Any,
                 index: Some(1),
                 replace: None,
-                format: None,
+                formatter: None,
             }),
             Elem::Spec(Spec {
                 matcher: Matcher::Any,
                 index: Some(1),
                 replace: None,
-                format: None,
+                formatter: None,
             }),
             Elem::Spec(Spec::new(Matcher::Any)),
         ], "aa1"),
@@ -254,16 +261,36 @@ mod tests {
                 matcher: Matcher::Any,
                 index: Some(2),
                 replace: None,
-                format: None,
+                formatter: None,
             }),
             Elem::Lit("-".to_owned()),
             Elem::Spec(Spec {
                 matcher: Matcher::Any,
                 index: Some(0),
                 replace: None,
-                format: None,
+                formatter: None,
             }),
         ], "1-a1"),
+
+        replace_format: ("a1", &[
+            Elem::Spec(Spec::new(Matcher::Any)),
+            Elem::Spec(Spec {
+                matcher: Matcher::Any,
+                index: None,
+                replace: None,
+                formatter: Some(Formatter { fill: '0', width: 2 }),
+            }),
+        ], "a01"),
+
+        replace_format_replace: ("a1", &[
+            Elem::Spec(Spec::new(Matcher::Any)),
+            Elem::Spec(Spec {
+                matcher: Matcher::Any,
+                index: None,
+                replace: Some("2".to_owned()),
+                formatter: Some(Formatter { fill: '0', width: 2 }),
+            }),
+        ], "a02"),
     );
 
     macro_rules! matchers_from_elems_tests {
@@ -301,13 +328,13 @@ mod tests {
                     matcher: Matcher::Any,
                     index: Some(1),
                     replace: None,
-                    format: None,
+                    formatter: None,
                 }),
                 Elem::Spec(Spec {
                     matcher: Matcher::Any,
                     index: Some(1),
                     replace: None,
-                    format: None,
+                    formatter: None,
                 }),
             ],
             &[Matcher::Any],
@@ -319,7 +346,7 @@ mod tests {
                     matcher: Matcher::Any,
                     index: Some(3),
                     replace: None,
-                    format: None,
+                    formatter: None,
                 }),
             ],
             &[Matcher::Any, Matcher::Any, Matcher::Any],
@@ -331,7 +358,7 @@ mod tests {
                     matcher: Matcher::Any,
                     index: Some(1),
                     replace: None,
-                    format: None,
+                    formatter: None,
                 }),
                 Elem::Spec(Spec::new(Matcher::Any)),
             ],
@@ -345,7 +372,7 @@ mod tests {
                     matcher: Matcher::Any,
                     index: Some(1),
                     replace: None,
-                    format: None,
+                    formatter: None,
                 }),
             ],
             &[Matcher::Number],
@@ -358,7 +385,7 @@ mod tests {
                     matcher: Matcher::Number,
                     index: Some(1),
                     replace: None,
-                    format: None,
+                    formatter: None,
                 }),
             ],
             &[Matcher::Number],
@@ -370,7 +397,7 @@ mod tests {
                     matcher: Matcher::Any,
                     index: Some(0),
                     replace: None,
-                    format: None,
+                    formatter: None,
                 }),
                 Elem::Spec(Spec::new(Matcher::Any)),
             ],

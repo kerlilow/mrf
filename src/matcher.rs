@@ -6,9 +6,9 @@ type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Matcher {
-    /// Match any token
+    /// Match any token.
     Any,
-    /// Match numbers only
+    /// Match numbers only.
     Number,
 }
 
