@@ -10,27 +10,35 @@ use super::utils::{items_from_opt, replacement_previews, resolve_replacements, s
 
 use crate::command;
 
+/// Execute the given command with each replaced item.
 #[derive(Clap)]
 #[clap(setting = AppSettings::ColoredHelp)]
 pub struct Opts {
-    #[clap(short, long)]
-    yes: bool,
-    #[clap(short = "l", long)]
-    output_left: bool,
-    #[clap(short = "r", long)]
-    output_right: bool,
+    /// Assume yes as answer to all prompts and run non-interactively.
+    #[clap(short = "y", long)]
+    assume_yes: bool,
+    /// Only pass the input string (left-hand side of mapping) to the command.
+    #[clap(short = "l", long, conflicts_with = "right-only")]
+    left_only: bool,
+    /// Only pass the replaced string (right-hand side of mapping) to the command.
+    #[clap(short = "r", long, conflicts_with = "left-only")]
+    right_only: bool,
+    /// Number of threads to use.
     #[clap(short, long)]
     concurrency: Option<usize>,
+    /// Command to run. To pass arguments to the command, quote the command (e.g. "mkdir -p").
     command: String,
+    /// Items to replace.
     #[clap(required = true)]
     item: Vec<String>,
+    /// Replacer string.
     replacer: String,
 }
 
 #[derive(Clone)]
 struct OutputOpts {
-    output_left: bool,
-    output_right: bool,
+    left_only: bool,
+    right_only: bool,
 }
 
 /// Run exec subcommand.
@@ -39,7 +47,7 @@ pub fn run(opts: Opts) -> Result<(), Box<dyn Error>> {
     setup_rayon(concurrency)?;
     let items = items_from_opt(opts.item)?;
     let replacements = resolve_replacements(&items, &opts.replacer)?;
-    if !opts.yes {
+    if !opts.assume_yes {
         println!(
             "Matched {} out of {} items:",
             replacements.len(),
@@ -56,8 +64,8 @@ pub fn run(opts: Opts) -> Result<(), Box<dyn Error>> {
     }
     let args = command::parse(&opts.command)?;
     let output_opts = OutputOpts {
-        output_left: opts.output_left,
-        output_right: opts.output_right,
+        left_only: opts.left_only,
+        right_only: opts.right_only,
     };
     replacements
         .par_iter()
@@ -74,9 +82,9 @@ fn do_exec(
 ) -> Result<(), Box<dyn Error>> {
     let mut cmd = Command::new(&args[0]);
     cmd.args(&args[1..]);
-    if opts.output_left && !opts.output_right {
+    if opts.left_only {
         cmd.arg(left);
-    } else if !opts.output_left && opts.output_right {
+    } else if opts.right_only {
         cmd.arg(right);
     } else {
         cmd.args(&[left, right]);

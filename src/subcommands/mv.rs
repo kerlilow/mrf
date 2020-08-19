@@ -7,15 +7,23 @@ use rayon::prelude::*;
 
 use super::utils::{items_from_opt, replacement_previews, resolve_replacements, setup_rayon};
 
+/// Move each file according to the replacer.
+///
+/// Note: Currently this subcommand only supports moving within the same filesystem. To move
+/// between filesystems, use `mrf exec mv` instead.
 #[derive(Clap)]
 #[clap(setting = AppSettings::ColoredHelp)]
 pub struct Opts {
-    #[clap(short, long)]
-    yes: bool,
+    /// Assume yes as answer to all prompts and run non-interactively.
+    #[clap(short = "y", long)]
+    assume_yes: bool,
+    /// Number of threads to use.
     #[clap(short, long)]
     concurrency: Option<usize>,
+    /// Files to move.
     #[clap(required = true)]
     item: Vec<String>,
+    /// Replacer string.
     replacer: String,
 }
 
@@ -25,7 +33,7 @@ pub fn run(opts: Opts) -> Result<(), Box<dyn Error>> {
     setup_rayon(concurrency)?;
     let items = items_from_opt(opts.item)?;
     let replacements = resolve_replacements(&items, &opts.replacer)?;
-    if !opts.yes {
+    if !opts.assume_yes {
         println!(
             "Moving {} out of {} items:",
             replacements.len(),

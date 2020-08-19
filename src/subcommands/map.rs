@@ -4,15 +4,20 @@ use clap::{AppSettings, Clap};
 
 use super::utils::{items_from_opt, resolve_replacements};
 
+/// Map each item according to the replacer.
 #[derive(Clap)]
 #[clap(setting = AppSettings::ColoredHelp)]
 pub struct Opts {
-    #[clap(short = "l", long)]
-    output_left: bool,
-    #[clap(short = "r", long)]
-    output_right: bool,
+    /// Only output the input string (left-hand side of mapping).
+    #[clap(short = "l", long, conflicts_with = "right-only")]
+    left_only: bool,
+    /// Only output the replaced string (right-hand side of mapping).
+    #[clap(short = "r", long, conflicts_with = "left-only")]
+    right_only: bool,
+    /// Items to replace.
     #[clap(required = true)]
     item: Vec<String>,
+    /// Replacer string.
     replacer: String,
 }
 
@@ -21,16 +26,16 @@ pub fn run(opts: Opts) -> Result<(), Box<dyn Error>> {
     let items = items_from_opt(opts.item)?;
     let replacements = resolve_replacements(&items, &opts.replacer)?;
     let print: fn(&str, &str) = if atty::is(atty::Stream::Stdout) {
-        if opts.output_left && !opts.output_right {
+        if opts.left_only {
             |left, _| println!("{}", left)
-        } else if !opts.output_left && opts.output_right {
+        } else if opts.right_only {
             |_, right| println!("{}", right)
         } else {
             |left, right| println!("{} -> {}", left, right)
         }
-    } else if opts.output_left && !opts.output_right {
+    } else if opts.left_only {
         |left, _| print!("{}\0", left)
-    } else if !opts.output_left && opts.output_right {
+    } else if opts.right_only {
         |_, right| print!("{}\0", right)
     } else {
         |left, right| print!("{}\0{}\0", left, right)
