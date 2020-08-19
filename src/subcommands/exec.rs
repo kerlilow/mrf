@@ -3,6 +3,7 @@ use std::process::Command;
 
 use clap::{AppSettings, Clap};
 use dialoguer::Confirm;
+use indicatif::{ParallelProgressIterator, ProgressBar};
 use rayon::prelude::*;
 
 use super::utils::{items_from_opt, replacement_previews, resolve_replacements, setup_rayon};
@@ -60,6 +61,7 @@ pub fn run(opts: Opts) -> Result<(), Box<dyn Error>> {
     };
     replacements
         .par_iter()
+        .progress_with(ProgressBar::new(replacements.len() as u64))
         .for_each(|(left, right)| do_exec(&output_opts, &args, left, right).unwrap());
     Ok(())
 }
