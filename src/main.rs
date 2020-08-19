@@ -36,6 +36,7 @@ fn run_app() -> Result<(), Box<dyn Error>> {
     ctrlc::set_handler(move || {
         let term = console::Term::stdout();
         let _ = term.show_cursor();
+        std::process::exit(1);
     })?;
 
     let opts = Opts::parse();
