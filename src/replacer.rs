@@ -2,7 +2,9 @@ use std::error::Error;
 
 use crate::{
     elem::Elem,
+    formatter::InputType,
     matcher::{match_all, Matcher},
+    spec::Spec,
 };
 
 pub struct Replacer {
@@ -53,7 +55,7 @@ impl Replacer {
                         parts[idx]
                     };
                     if let Some(formatter) = &spec.formatter {
-                        formatter.format(r)
+                        formatter.format(spec_input_type(&spec), r)
                     } else {
                         r.to_owned()
                     }
@@ -101,6 +103,14 @@ fn indices_to_strs<'a>(s: &'a str, indices: &[usize]) -> Vec<&'a str> {
         .windows(2)
         .map(|w| &s[w[0]..w[1]])
         .collect()
+}
+
+/// Get input type of spec.
+fn spec_input_type(spec: &Spec) -> InputType {
+    match spec.matcher {
+        Matcher::Number => InputType::Number,
+        _ => InputType::String,
+    }
 }
 
 #[cfg(test)]
