@@ -103,8 +103,8 @@ fn elem_spec<'a, E: ParseError<&'a str>>(s: &'a str) -> IResult<&'a str, Elem, E
 /// A specifier consists of 4 optional parts:
 /// 1. A matcher.
 /// 2. An index.
-/// 3. A replace string, preceded by an equal sign (`=`).
-/// 4. A format string, preceded by a colon (`:`).
+/// 3. A replacement string, preceded by an equal sign (`=`).
+/// 4. A format specifier, preceded by a colon (`:`).
 fn spec<'a, E: ParseError<&'a str>>(s: &'a str) -> IResult<&'a str, Spec, E> {
     let (s, matcher) = spec_matcher(s)?;
     let (s, index) = opt(map_res(digit1, usize::from_str))(s)?;
@@ -140,10 +140,10 @@ fn spec_matcher<'a, E: ParseError<&'a str>>(s: &'a str) -> IResult<&'a str, Matc
     })(s)
 }
 
-/// Parse a replace string.
+/// Parse a replacement string.
 ///
-/// A replace string ends when a colon (which indicates the beginning of the format string), or a
-/// closing curly brace (which denotes the end of the specifier) is met.
+/// A replacement string ends when a colon (which indicates the beginning of the format string), or
+/// a closing curly brace (which denotes the end of the specifier) is met.
 ///
 /// A backslash (`\`) may be used to escape any of these characters: `{}:\`.
 fn spec_replace<'a, E: ParseError<&'a str>>(s: &'a str) -> IResult<&'a str, String, E> {
@@ -153,7 +153,7 @@ fn spec_replace<'a, E: ParseError<&'a str>>(s: &'a str) -> IResult<&'a str, Stri
     )(s)
 }
 
-/// Unescape replace string.
+/// Unescape replacement string.
 ///
 /// Remove backslashes from escaped characters.
 fn unescape_replace(s: &str) -> String {
@@ -163,9 +163,9 @@ fn unescape_replace(s: &str) -> String {
         .replace("\\\\", "\\")
 }
 
-/// Parse a format string.
+/// Parse a format specifier.
 ///
-/// A format string ends when a closing curly brace is met.
+/// A format specifier ends when a closing curly brace is met.
 fn spec_formatter<'a, E: ParseError<&'a str>>(s: &'a str) -> IResult<&'a str, Formatter, E> {
     let (s, fill) = opt(char('0'))(s)?;
     let (s, width) = opt(digit1)(s)?;
