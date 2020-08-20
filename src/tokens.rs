@@ -22,7 +22,7 @@ pub fn tokenize(s: &str) -> (Vec<usize>, Vec<TokenType>) {
     let mut indices = vec![];
     let mut token_types = vec![];
     for (i, c) in s.chars().enumerate() {
-        let tt = get_token_type(c);
+        let tt = token_type(c);
         if current_token_type != tt {
             indices.push(i);
             token_types.push(tt);
@@ -33,7 +33,7 @@ pub fn tokenize(s: &str) -> (Vec<usize>, Vec<TokenType>) {
 }
 
 /// Get token type of character.
-fn get_token_type(c: char) -> TokenType {
+fn token_type(c: char) -> TokenType {
     if c.is_ascii_digit() {
         return TokenType::Number;
     }
