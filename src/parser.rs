@@ -172,10 +172,10 @@ fn spec_formatter<'a, E: ParseError<&'a str>>(s: &'a str) -> IResult<&'a str, Fo
     let (s, _) = peek(char('}'))(s)?;
     Ok((
         s,
-        Formatter {
-            fill: fill.unwrap_or(' '),
-            width: width.map(|w| w.parse::<usize>().unwrap()).unwrap_or(0),
-        },
+        Formatter::with_width(
+            width.map(|w| w.parse::<usize>().unwrap()).unwrap_or(0),
+            fill.unwrap_or(' '),
+        ),
     ))
 }
 
@@ -297,7 +297,7 @@ mod tests {
                     matcher: Matcher::Any,
                     index: None,
                     replace: Some(":".to_owned()),
-                    formatter: Some(Formatter { fill: ' ', width: 0 }),
+                    formatter: Some(Formatter::new()),
                 }),
             ],
         ),
@@ -309,7 +309,7 @@ mod tests {
                     matcher: Matcher::Any,
                     index: None,
                     replace: None,
-                    formatter: Some(Formatter { fill: ' ', width: 4 }),
+                    formatter: Some(Formatter::with_width(4, ' ')),
                 }),
             ],
         ),
@@ -321,7 +321,7 @@ mod tests {
                     matcher: Matcher::Number,
                     index: None,
                     replace: None,
-                    formatter: Some(Formatter { fill: '0', width: 4 }),
+                    formatter: Some(Formatter::with_width(4, '0')),
                 }),
             ],
         ),
@@ -333,7 +333,7 @@ mod tests {
                     matcher: Matcher::Number,
                     index: None,
                     replace: Some("1".to_owned()),
-                    formatter: Some(Formatter { fill: '0', width: 4 }),
+                    formatter: Some(Formatter::with_width(4, '0')),
                 }),
             ],
         ),
@@ -345,7 +345,7 @@ mod tests {
                     matcher: Matcher::Number,
                     index: Some(1),
                     replace: Some("1".to_owned()),
-                    formatter: Some(Formatter { fill: '0', width: 4 }),
+                    formatter: Some(Formatter::with_width(4, '0')),
                 }),
             ],
         ),

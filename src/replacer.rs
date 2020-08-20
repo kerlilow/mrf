@@ -288,7 +288,7 @@ mod tests {
                 matcher: Matcher::Any,
                 index: None,
                 replace: None,
-                formatter: Some(Formatter { fill: '0', width: 2 }),
+                formatter: Some(Formatter::with_width(2, '0')),
             }),
         ], "a01"),
 
@@ -298,7 +298,7 @@ mod tests {
                 matcher: Matcher::Any,
                 index: None,
                 replace: Some("2".to_owned()),
-                formatter: Some(Formatter { fill: '0', width: 2 }),
+                formatter: Some(Formatter::with_width(2, '0')),
             }),
         ], "a02"),
     );
