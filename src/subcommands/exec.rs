@@ -74,6 +74,7 @@ pub fn run(opts: Opts) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+/// Execute command with args and replacement.
 fn do_exec(
     opts: &OutputOpts,
     args: &[String],
