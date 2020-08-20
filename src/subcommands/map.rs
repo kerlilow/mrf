@@ -5,8 +5,19 @@ use clap::{AppSettings, Clap};
 use super::utils::{items_from_opt, resolve_replacements};
 
 /// Map each item according to the replacer.
+///
+/// Examples:
+///
+/// 1. Replace hyphen with underscore:
+///
+///     $ mrf map example-001 '{}{=_}{}'
+///     example-001 -> example_001
+///
+/// 2. Pipe to cp (consider using the "exec" subcommand instead):
+///
+///     $ mrf map * '{}{=-}{}' | xargs -0 -n2 cp
 #[derive(Clap)]
-#[clap(setting = AppSettings::ColoredHelp)]
+#[clap(setting = AppSettings::ColoredHelp, verbatim_doc_comment)]
 pub struct Opts {
     /// Only output the input string (left-hand side of mapping).
     #[clap(short = "l", long, conflicts_with = "right-only")]

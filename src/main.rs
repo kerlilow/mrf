@@ -4,6 +4,11 @@ use clap::{AppSettings, Clap};
 
 use mrf::subcommands;
 
+/// {[m]atch=[r]eplace:[f]ormat} (Run `mrf --help` for more information.)
+///
+/// See help for each subcommand for example usages.
+///
+/// Visit https://github.com/kerlilow/mrf to learn more.
 #[derive(Clap)]
 #[clap(
     version = "0.1",

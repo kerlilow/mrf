@@ -11,8 +11,28 @@ use super::utils::{items_from_opt, replacement_previews, resolve_replacements, s
 ///
 /// Note: Currently this subcommand only supports moving within the same filesystem. To move
 /// between filesystems, use `mrf exec mv` instead.
+///
+/// Examples:
+///
+/// 1. Replace hyphen with underscore:
+///
+///     $ mrf mv * '{}{=_}{}'
+///     Moving 1 out of 1 items:
+///         image-001.jpg -> image_001.jpg
+///
+/// 2. Rename while keeping numbering:
+///
+///     $ mrf mv * '{=photo}{}'
+///     Moving 1 out of 1 items:
+///         image-001.jpg -> photo-001.jpg
+///
+/// 3. Add zero padding:
+///
+///     $ mrf mv * '{}{n:03}{}'
+///     Moving 1 out of 1 items:
+///         image-1.jpg -> image-001.jpg
 #[derive(Clap)]
-#[clap(setting = AppSettings::ColoredHelp)]
+#[clap(setting = AppSettings::ColoredHelp, verbatim_doc_comment)]
 pub struct Opts {
     /// Assume yes as answer to all prompts and run non-interactively.
     #[clap(short = "y", long)]
