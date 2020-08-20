@@ -37,7 +37,7 @@ fn token_type(c: char) -> TokenType {
     if c.is_ascii_digit() {
         return TokenType::Number;
     }
-    if c.is_whitespace() {
+    if c.is_ascii_whitespace() {
         return TokenType::Whitespace;
     }
     if c.is_ascii_punctuation() {
