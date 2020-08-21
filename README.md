@@ -1,6 +1,6 @@
 # {[m]atch=[r]eplace:[f]ormat}
 
-![Tests Status](https://github.com/kerlilow/mrf/workflows/Tests/badge.svg)
+[![Tests Status](https://github.com/kerlilow/mrf/workflows/Tests/badge.svg)](https://github.com/kerlilow/mrf/actions)
 
 Rename files by pattern matching.
 
