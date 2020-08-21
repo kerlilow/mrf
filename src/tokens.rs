@@ -107,12 +107,6 @@ mod tests {
             TokenType::Whitespace,
             TokenType::Text,
         ])),
-        tokenize_unicode_whitespace: ("12b　c", (vec![0, 2, 3, 4], vec![
-            TokenType::Number,
-            TokenType::Text,
-            TokenType::Whitespace,
-            TokenType::Text,
-        ])),
         tokenize_punctuation: ("12b.c", (vec![0, 2, 3, 4], vec![
             TokenType::Number,
             TokenType::Text,
