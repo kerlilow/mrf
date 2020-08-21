@@ -6,6 +6,18 @@ Rename files by pattern matching.
 
 ## Demo
 
+### Rename files
+
+![Rename files demo](/demos/rename.svg?raw=true)
+
+### Organize files
+
+![Organize files demo](/demos/organize.svg?raw=true)
+
+### Format numbers
+
+![Format numbers demo](/demos/format.svg?raw=true)
+
 ## Installation
 
 ### From source
