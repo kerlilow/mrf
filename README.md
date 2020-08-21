@@ -36,8 +36,8 @@ Each matcher matches one or more tokens. There are 2 types of matchers:
 
 Note: A matcher matches the minimum number of tokens required.
 
-For example, the string `example-001` with the replacement string `{}{n}` will
-be matched as:
+For example, the string `example-001` with the replacer string `{}{n}` will be
+matched as:
 ```
 [example-][001]
  ^^^^^^^^  ^^^
@@ -46,7 +46,7 @@ be matched as:
 
 Note that the Any matcher matches 2 tokens here.
 
-On the other hand, for the same string, if the replacement string `{}{}` will be
+On the other hand, for the same string, if the replacer string `{}{}` will be
 matched as:
 ```
 [example][-001]
