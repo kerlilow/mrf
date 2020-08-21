@@ -74,6 +74,83 @@ width. Example: `{:03}`.
 
 ## Usage
 
+### Rename/move files with `mrf mv`
+
+```
+mrf mv <item>... <replacer>
+```
+
+#### Examples
+
+##### Replace hyphen with underscore
+
+```sh
+$ mrf mv * '{}{=_}{}'
+Moving 1 out of 1 items:
+    image-001.jpg -> image_001.jpg
+```
+
+##### Rename while keeping numbering
+
+```sh
+$ mrf mv * '{=photo}{}'
+Moving 1 out of 1 items:
+    image-001.jpg -> photo-001.jpg
+```
+
+##### Add zero padding
+
+```sh
+$ mrf mv * '{}{n:03}{}'
+Moving 1 out of 1 items:
+    image-1.jpg -> image-001.jpg
+```
+
+### Execute commands with `mrf exec`
+
+```
+mrf exec <command> <item>... <replacer>
+```
+
+#### Examples
+
+##### Make directory
+
+```sh
+$ mrf exec -r 'mkdir -p' * '{3}{=}'
+Matched 1 out of 1 items:
+    image-2020-01-01.jpg -> 2020
+```
+
+##### Copy files
+
+```sh
+$ mrf exec cp * '{}{=_}{}'
+Matched 1 out of 1 items:
+    image-001.jpg -> image_001.jpg
+```
+
+### Map strings with `mrf map` (useful for testing and understanding)
+
+```
+mrf map [FLAGS] <item>... <replacer>
+```
+
+#### Examples
+
+##### Replace hyphen with underscore
+
+```sh
+$ mrf map example-001 '{}{=_}{}'
+example-001 -> example_001
+```
+
+##### Pipe to cp (consider using the "exec" subcommand instead)
+
+```sh
+$ mrf map * '{}{=-}{}' | xargs -0 -n2 cp
+```
+
 ## Roadmap
 
 - [ ] Nicer error reports
