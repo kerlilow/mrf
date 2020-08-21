@@ -21,18 +21,18 @@ $ cargo install mrf
 ### Tokenization
 
 The input string is split into tokens. There are 4 types of tokens:
-1. Number - A contiguous string of ASCII digits (0-9).
-2. Whitespace - A contiguous string of ASCII whitespaces.
-3. Punctuation - A contiguous string of ASCII punctuations.
-4. Text - A contiguous string of characters that are none of the above.
+1. **Number** - A contiguous string of ASCII digits (0-9).
+2. **Whitespace** - A contiguous string of ASCII whitespaces.
+3. **Punctuation** - A contiguous string of ASCII punctuations.
+4. **Text** - A contiguous string of characters that are none of the above.
 
 For example, the string `example-001` will be tokenized as `[example][-][001]`.
 
 ### Matching
 
 Each matcher matches one or more tokens. There are 2 types of matchers:
-1. Any - Match any type of tokens, the default matcher. Example: `{}`.
-2. Number - Match a Number token, specified with `n`. Example: `{n}`.
+1. **Any** - Match any type of tokens, the default matcher. Example: `{}`.
+2. **Number** - Match a Number token, specified with `n`. Example: `{n}`.
 
 Note: A matcher matches the minimum number of tokens required.
 
@@ -68,8 +68,8 @@ A format specifier may be specified to format the matched substring (or the
 replacement, if specified).
 
 The following format specifiers are supported:
-1. Padding (aligned to the right) - Specify the desired width. Example: `{:3}`.
-2. Zero-padding (aligned to the right) - Specify `0`, followed by the desired
+1. **Padding** (aligned to the right) - Specify the desired width. Example: `{:3}`.
+2. **Zero padding** (aligned to the right) - Specify `0`, followed by the desired
 width. Example: `{:03}`.
 
 ## Usage
