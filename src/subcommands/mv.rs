@@ -40,7 +40,7 @@ pub struct Opts {
     /// Number of threads to use.
     #[clap(short, long)]
     concurrency: Option<usize>,
-    /// Files to move.
+    /// Files to move. Pass "-" to read from stdin.
     #[clap(required = true)]
     item: Vec<String>,
     /// Replacer string.

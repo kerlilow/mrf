@@ -42,7 +42,7 @@ pub struct Opts {
     concurrency: Option<usize>,
     /// Command to run. To pass arguments to the command, quote the command (e.g. "mkdir -p").
     command: String,
-    /// Items to replace.
+    /// Items to replace. Pass "-" to read from stdin.
     #[clap(required = true)]
     item: Vec<String>,
     /// Replacer string.

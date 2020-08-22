@@ -25,7 +25,7 @@ pub struct Opts {
     /// Only output the replaced string (right-hand side of mapping).
     #[clap(short = "r", long, conflicts_with = "left-only")]
     right_only: bool,
-    /// Items to replace.
+    /// Items to replace. Pass "-" to read from stdin.
     #[clap(required = true)]
     item: Vec<String>,
     /// Replacer string.
