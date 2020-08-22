@@ -28,6 +28,10 @@ Currently, only installation from source using Rust's package manager [Cargo](ht
 $ cargo install mrf
 ```
 
+### From binaries
+
+The [release page](https://github.com/kerlilow/mrf/releases) includes precompiled binaries for Linux, macOS and Windows.
+
 ## How It Works
 
 ### Tokenization
