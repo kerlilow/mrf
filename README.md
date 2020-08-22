@@ -2,7 +2,7 @@
 
 [![Tests Status](https://github.com/kerlilow/mrf/workflows/tests/badge.svg)](https://github.com/kerlilow/mrf/actions)
 
-Rename files by pattern matching.
+mrf (pronounced "morph") lets you rename files by pattern matching.
 
 ## Demo
 
