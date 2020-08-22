@@ -1,5 +1,7 @@
 # {[m]atch=[r]eplace:[f]ormat}
 
+[![crates.io](https://img.shields.io/crates/v/mrf)](https://crates.io/crates/mrf)
+[![License](https://img.shields.io/crates/l/mrf)](LICENSE.md)
 [![Tests Status](https://github.com/kerlilow/mrf/workflows/tests/badge.svg)](https://github.com/kerlilow/mrf/actions)
 
 mrf (pronounced "morph") lets you rename files by pattern matching.
