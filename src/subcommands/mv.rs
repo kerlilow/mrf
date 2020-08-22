@@ -71,6 +71,10 @@ pub fn run(opts: Opts) -> Result<(), Box<dyn Error>> {
     replacements
         .par_iter()
         .progress_with(ProgressBar::new(replacements.len() as u64))
-        .for_each(|(left, right)| std::fs::rename(left, right).unwrap());
+        .for_each(|(left, right)| {
+            std::fs::rename(left, right).unwrap_or_else(|e| {
+                eprintln!("{}", e);
+            })
+        });
     Ok(())
 }
