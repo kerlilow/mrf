@@ -8,7 +8,7 @@ homepage = "https://github.com/kerlilow/mrf"
 repository = "https://github.com/kerlilow/mrf"
 documentation = "https://docs.rs/mrf"
 readme = "README.md"
-description = "Move or copy files by pattern matching."
+description = "Rename files by pattern matching."
 
 [lib]
 path = "src/lib.rs"
@@ -22,3 +22,6 @@ dialoguer = "0.6.2"
 indicatif = { version = "0.15.0", features = ["rayon"]}
 atty = "0.2.14"
 rayon = "1.3.1"
+assert_cmd = "1.0.1"
+predicates = "1.0.5"
+assert_fs = "1.0.0"
