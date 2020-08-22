@@ -3,8 +3,14 @@ name: tests
 on:
   push:
     branches: [ master ]
+    paths-ignore:
+    - '*.md'
+    - 'demos/**'
   pull_request:
     branches: [ master ]
+    paths-ignore:
+    - '*.md'
+    - 'demos/**'
 
 env:
   CARGO_TERM_COLOR: always
