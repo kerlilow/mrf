@@ -24,7 +24,7 @@ mrf (pronounced "morph") lets you rename files by pattern matching.
 
 ### From source
 
-Currently, only installation from source using Rust's package manager [Cargo](https://github.com/rust-lang/cargo) is supported.
+mrf may be installed from source using Rust's package manager [Cargo](https://github.com/rust-lang/cargo).
 
 ```sh
 $ cargo install mrf
