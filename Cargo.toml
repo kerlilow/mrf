@@ -9,6 +9,15 @@ repository = "https://github.com/kerlilow/mrf"
 documentation = "https://docs.rs/mrf"
 readme = "README.md"
 description = "Rename files by pattern matching."
+keywords = [
+    "pattern",
+    "match",
+    "tool",
+    "file",
+    "filesystem",
+]
+categories = ["command-line-utilities"]
+exclude =   ["demos/*"]
 
 [lib]
 path = "src/lib.rs"
