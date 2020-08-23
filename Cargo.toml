@@ -17,7 +17,10 @@ keywords = [
     "filesystem",
 ]
 categories = ["command-line-utilities"]
-exclude =   ["demos/*"]
+exclude =   [
+    ".github",
+    "demos",
+]
 
 [lib]
 path = "src/lib.rs"
