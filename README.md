@@ -22,9 +22,27 @@ mrf (pronounced "morph") lets you rename files by pattern matching.
 
 ## Installation
 
+### On Linux
+
+You can install mrf with [Homebrew](https://brew.sh/):
+
+```
+brew tap kerlilow/tools
+brew install mrf
+```
+
+### On macOS
+
+You can install mrf with [Homebrew](https://brew.sh/):
+
+```
+brew tap kerlilow/tools
+brew install mrf
+```
+
 ### From source
 
-mrf may be installed from source using Rust's package manager [Cargo](https://github.com/rust-lang/cargo).
+You can install mrf from source using Rust's package manager [Cargo](https://github.com/rust-lang/cargo):
 
 ```sh
 $ cargo install mrf
