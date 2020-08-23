@@ -30,13 +30,13 @@ jobs:
       matrix:
         include:
         - os: ubuntu-latest
-          asset_suffix: -linux-amd64.tar.gz
+          asset_suffix: -x86_64-unknown-linux-gnu.tar.gz
           asset_content_type: application/gzip
         - os: macos-latest
-          asset_suffix: -darwin-amd64.tar.gz
+          asset_suffix: -x86_64-apple-darwin.tar.gz
           asset_content_type: application/gzip
         - os: windows-latest
-          asset_suffix: -windows-amd64.zip
+          asset_suffix: -x86_64-pc-windows-msvc.zip
           asset_content_type: application/zip
     steps:
     - name: Checkout code
