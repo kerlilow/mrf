@@ -5,7 +5,9 @@ use dialoguer::Confirm;
 use indicatif::{ParallelProgressIterator, ProgressBar};
 use rayon::prelude::*;
 
-use super::utils::{items_from_opt, replacement_previews, resolve_replacements, setup_rayon};
+use super::utils::{items_from_opt, setup_rayon};
+
+use crate::replacement::{previews, resolve, PreviewOpts, ResolveOpts};
 
 /// Move each file according to the replacer.
 ///
@@ -52,14 +54,14 @@ pub fn run(opts: Opts) -> Result<(), Box<dyn Error>> {
     let concurrency = opts.concurrency.unwrap_or(0);
     setup_rayon(concurrency)?;
     let items = items_from_opt(opts.item)?;
-    let replacements = resolve_replacements(&items, &opts.replacer)?;
+    let replacements = resolve(&items, &opts.replacer, ResolveOpts::new())?;
     if !opts.assume_yes {
         println!(
             "Moving {} out of {} items:",
             replacements.len(),
             items.len()
         );
-        println!("{}", replacement_previews(&replacements));
+        println!("{}", previews(&items, &opts.replacer, PreviewOpts::new())?);
         if !Confirm::new()
             .with_prompt("Do you want to continue?")
             .default(false)
@@ -72,7 +74,7 @@ pub fn run(opts: Opts) -> Result<(), Box<dyn Error>> {
         .par_iter()
         .progress_with(ProgressBar::new(replacements.len() as u64))
         .for_each(|(left, right)| {
-            std::fs::rename(left, right).unwrap_or_else(|e| {
+            std::fs::rename(left.as_ref(), right).unwrap_or_else(|e| {
                 eprintln!("{}", e);
             })
         });

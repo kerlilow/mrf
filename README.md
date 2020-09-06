@@ -190,7 +190,7 @@ $ mrf map * '{}{=-}{}' | xargs -0 -n2 cp
 ## Roadmap
 
 - [ ] Nicer error reports
-- [ ] Match highlighting
+- [x] Match highlighting
 - [ ] More installation methods
 - [ ] Exact, prefix, suffix matcher
 - [ ] Regex matcher

@@ -1,8 +1,11 @@
+use std::borrow::Cow;
 use std::error::Error;
 
 use clap::{AppSettings, Clap};
 
-use super::utils::{items_from_opt, resolve_replacements};
+use super::utils::items_from_opt;
+
+use crate::replacement::{resolve, ResolveOpts};
 
 /// Map each item according to the replacer.
 ///
@@ -35,24 +38,29 @@ pub struct Opts {
 /// Run map (`map`) subcommand.
 pub fn run(opts: Opts) -> Result<(), Box<dyn Error>> {
     let items = items_from_opt(opts.item)?;
-    let replacements = resolve_replacements(&items, &opts.replacer)?;
-    let print: fn(&str, &str) = if atty::is(atty::Stream::Stdout) {
+    let print: fn(&(Cow<'_, str>, String)) = if atty::is(atty::Stream::Stdout) {
         if opts.left_only {
-            |left, _| println!("{}", left)
+            |(left, _)| println!("{}", left)
         } else if opts.right_only {
-            |_, right| println!("{}", right)
+            |(_, right)| println!("{}", right)
         } else {
-            |left, right| println!("{} -> {}", left, right)
+            |(left, right)| println!("{} -> {}", left, right)
         }
     } else if opts.left_only {
-        |left, _| print!("{}\0", left)
+        |(left, _)| print!("{}\0", left)
     } else if opts.right_only {
-        |_, right| print!("{}\0", right)
+        |(_, right)| print!("{}\0", right)
     } else {
-        |left, right| print!("{}\0{}\0", left, right)
+        |(left, right)| print!("{}\0{}\0", left, right)
     };
-    for (left, right) in replacements {
-        print(left, &right);
-    }
+    resolve(
+        &items,
+        &opts.replacer,
+        ResolveOpts {
+            highlight: atty::is(atty::Stream::Stdout),
+        },
+    )?
+    .iter()
+    .for_each(print);
     Ok(())
 }

@@ -6,9 +6,10 @@ use dialoguer::Confirm;
 use indicatif::{ParallelProgressIterator, ProgressBar};
 use rayon::prelude::*;
 
-use super::utils::{items_from_opt, replacement_previews, resolve_replacements, setup_rayon};
+use super::utils::{items_from_opt, setup_rayon};
 
 use crate::command;
+use crate::replacement::{previews, resolve, PreviewOpts, ResolveOpts};
 
 /// Execute the given command with each replaced item.
 ///
@@ -60,14 +61,14 @@ pub fn run(opts: Opts) -> Result<(), Box<dyn Error>> {
     let concurrency = opts.concurrency.unwrap_or(0);
     setup_rayon(concurrency)?;
     let items = items_from_opt(opts.item)?;
-    let replacements = resolve_replacements(&items, &opts.replacer)?;
+    let replacements = resolve(&items, &opts.replacer, ResolveOpts::new())?;
     if !opts.assume_yes {
         println!(
             "Matched {} out of {} items:",
             replacements.len(),
             items.len()
         );
-        println!("{}", replacement_previews(&replacements));
+        println!("{}", previews(&items, &opts.replacer, PreviewOpts::new())?);
         if !Confirm::new()
             .with_prompt("Do you want to continue?")
             .default(false)
